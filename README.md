@@ -6,17 +6,17 @@ Download current repository, and run `npm install` (you must have `npm` installe
 
 ## Commands
 
-### `npm area.js`
+### `node area.js`
 
 Compute FSE landing zones from a FSE Planner `icaodata.json` file.
 
 Mandatory parameters:
 
-*`-i` FSE Planner icaodata.json file
-*`-o` Output file
+* `-i` FSE Planner icaodata.json file
+* `-o` Output file
 
 
-### `npm msfs.js`
+### `node msfs.js`
 
 Compute MSFS airports within each FSE airport landing zone
 
@@ -25,18 +25,18 @@ from Little Navmap MSFS SQLite database to a CSV file
 
 Mandatory parameters:
 
-*`-f` CSV file (export from Little Navmap)
-*`-i` FSE Planner icaodata-with-zones.json file
-*`-o` Output icaodata-with-zones.json file
-*`-m` Output msfs.json file
+* `-f` CSV file (export from Little Navmap)
+* `-i` FSE Planner icaodata-with-zones.json file
+* `-o` Output icaodata-with-zones.json file
+* `-m` Output msfs.json file
 
 
-### `npm canifly.js`
+### `node canifly.js`
 
 Transform an FSE Planner `icaodata-with-zones.json` file to a Can I Fly There file
 
-*`-i` FSE Planner icaodata.json file
-*`-o` Output file
+* `-i` FSE Planner icaodata.json file
+* `-o` Output file
 
 
 
