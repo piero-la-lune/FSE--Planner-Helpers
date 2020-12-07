@@ -1,0 +1,14 @@
+{
+  "name": "fseplanner-helpers",
+  "version": "0.0.1",
+  "license": "MIT",
+  "author": "piero-la-lune",
+  "dependencies": {
+    "cli-progress": "^3.8.2",
+    "csv-parser": "^3.0.0",
+    "d3-geo-voronoi": "^1.6.0",
+    "geolib": "^3.3.1",
+    "minimist": "^1.2.5",
+    "turf": "^3.0.14"
+  }
+}
