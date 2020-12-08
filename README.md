@@ -39,6 +39,15 @@ Transform an FSE Planner `icaodata-with-zones.json` file to a Can I Fly There fi
 * `-o` Output file
 
 
+### `node fbo.js`
+
+Transform an FSE Planner `icaodata-with-zones.json` file to a Can I Fly There file
+
+* `-i` FSE Planner icaodata.json file
+* `-o` Output .json file
+* `-u` FSE Server username
+* `-p` FSE Server password
+
 
 ## License
 

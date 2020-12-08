@@ -105,8 +105,8 @@ fs.createReadStream(argv.f)
 
     console.log('Saving file');
 
-    fs.writeFile(argv.o, JSON.stringify(icaodata, null, '  '), (err) => { console.log(err); });
-    fs.writeFile(argv.m, JSON.stringify(obj, null, '  '), (err) => { console.log(err); });
+    fs.writeFileSync(argv.o, JSON.stringify(icaodata, null, '  '), (err) => { console.log(err); });
+    fs.writeFileSync(argv.m, JSON.stringify(obj, null, '  '), (err) => { console.log(err); });
 
     console.log('Done');
 

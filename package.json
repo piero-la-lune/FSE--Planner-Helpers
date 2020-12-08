@@ -4,6 +4,7 @@
   "license": "MIT",
   "author": "piero-la-lune",
   "dependencies": {
+    "axios": "^0.21.0",
     "cli-progress": "^3.8.2",
     "csv-parser": "^3.0.0",
     "d3-geo-voronoi": "^1.6.0",

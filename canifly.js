@@ -49,6 +49,6 @@ for (const icao of icaos) {
 txt += '}';
 
 
-fs.writeFile(argv.o, txt, (err) => { console.log(err); });
+fs.writeFileSync(argv.o, txt, (err) => { console.log(err); });
 
 process.exit();

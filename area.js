@@ -50,6 +50,6 @@ for (const [icao, a] of Object.entries(icaodata)) {
   }
 }
 
-fs.writeFile(argv.o, JSON.stringify(icaodata, null, '  '), (err) => { console.log(err); });
+fs.writeFileSync(argv.o, JSON.stringify(icaodata, null, '  '), (err) => { console.log(err); });
 
 process.exit();
