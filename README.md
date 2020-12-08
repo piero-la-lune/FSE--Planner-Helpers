@@ -41,7 +41,7 @@ Transform an FSE Planner `icaodata-with-zones.json` file to a Can I Fly There fi
 
 ### `node fbo.js`
 
-Transform an FSE Planner `icaodata-with-zones.json` file to a Can I Fly There file
+Compute the list of unbuilt FBOs.
 
 * `-i` FSE Planner icaodata.json file
 * `-o` Output .json file
