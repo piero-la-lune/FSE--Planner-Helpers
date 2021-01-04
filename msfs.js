@@ -8,7 +8,7 @@ from Little Navmap MSFS SQLite database to a CSV file
 -f    CSV file (export from Little Navmap)
 -i    FSE Planner icaodata-with-zones.json file
 -o    Output icaodata-with-zones.json file
--m   Output msfs.json file
+-m    Output msfs.json file
 
 */
 

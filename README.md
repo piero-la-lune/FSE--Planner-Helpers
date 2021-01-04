@@ -49,6 +49,14 @@ Compute the list of unbuilt FBOs.
 * `-p` FSE Server password
 
 
+### `node planes.js`
+
+Get the list of all FSE plane models in JSON file.
+
+* `-o` Output .json file
+* `-k` FSE datafeed user key
+
+
 ## License
 
 FSE Planner and its helpers are open source software licensed as [MIT](https://github.com/piero-la-lune/FSE-Planner/blob/master/LICENSE).
