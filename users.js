@@ -17,12 +17,6 @@ const argv = require('minimist')(process.argv.slice(2));
 if (!argv.o) {
   throw new Error('Missing parameter -o');
 }
-if (!argv.u) {
-  throw new Error('Missing parameter -u');
-}
-if (!argv.p) {
-  throw new Error('Missing parameter -p');
-}
 
 const instance = axios.create({
   baseURL: 'https://server.fseconomy.net/'
@@ -32,16 +26,19 @@ const instance = axios.create({
 
 
 instance
-  .get('score.jsp?type=groups')
+  .get('score.jsp?type=groups', {
+    responseType: 'arraybuffer',
+    reponseEncoding: 'binary'
+  })
   .then(res => {
 
-    const groups = [...res.data.matchAll(/<tr>\s*<td>(.*)<\/td>/g)].map(elm => elm[1]);
+    const groups = [...res.data.toString('latin1').matchAll(/<tr>\s*<td>(.*)<\/td>/g)].map(elm => elm[1]);
 
     instance
       .get('score.jsp?type=pilots')
       .then(res => {
 
-        const pilots = [...res.data.matchAll(/<tr>\s*<td>(.*)<\/td>/g)].map(elm => elm[1]);
+        const pilots = [...res.data.toString('latin1').matchAll(/<tr>\s*<td>(.*)<\/td>/g)].map(elm => elm[1]);
 
         fs.writeFileSync(argv.o, JSON.stringify([...groups, ...pilots], null, '  '), (err) => { console.log(err); });
 
