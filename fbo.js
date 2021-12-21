@@ -68,11 +68,25 @@ instance
                 const matchInactive = [...res.data.matchAll(/\\">([A-Z0-9]+)<\/a>/g)];
                 const inactive = matchInactive.map(elm => elm[1]);
 
-                const unbuilt = Object.keys(icaodata).filter(elm => !active.includes(elm) && !inactive.includes(elm));
+                instance
+                  .get('rest/api2/map/fbos/lottery', params)
+                  .then(({ data }) => {
+                    const { meta } = data;
+                    const { error, info } = meta;
+                    if (error) throw new Error(info);
 
-                fs.writeFileSync(argv.o, JSON.stringify(unbuilt, null, '  '), (err) => { console.log(err); });
+                    const closed = data.data.map(({ icao }) => icao);
 
-                process.exit();
+                    const unbuilt = Object.keys(icaodata).filter(elm => !active.includes(elm) && !inactive.includes(elm) && !closed.includes(elm));
+
+                    fs.writeFileSync(argv.o, JSON.stringify(unbuilt, null, '  '), (err) => { console.log(err); });
+
+                    process.exit();
+
+                  })
+                  .catch(error => {
+                    console.log(error);
+                  });
 
               })
               .catch(error => {
