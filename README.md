@@ -2,7 +2,7 @@
 
 ## Installation
 
-Download current repository, and run `npm install` (you must have `npm` installed).
+Download current repository, and run `npm install` in this folder (you must have `npm` installed).
 
 ## Commands
 
@@ -26,27 +26,33 @@ from Little Navmap MSFS SQLite database to a CSV file
 Mandatory parameters:
 
 * `-f` CSV file (export from Little Navmap)
-* `-i` FSE Planner icaodata-with-zones.json file
-* `-o` Output icaodata-with-zones.json file
+* `-i` FSE Planner icaodata.json file
+* `-z` FSE Planner zones.json file
+* `-o` Output icaodata.json file
 * `-m` Output msfs.json file
+
+
+### `node hasils.js`
+
+Edit icaodata to add ILS information
+
+You first need to load MSFS assets with Little Navmap, then export table `ils`
+from Little Navmap MSFS SQLite database to a CSV file, then extract an JSON
+array with all icaos
+
+Mandatory parameters:
+
+* `-f` JSON file (export from Little Navmap)
+* `-i` FSE Planner icaodata.json file
+* `-o` Output icaodata.json file
 
 
 ### `node canifly.js`
 
-Transform an FSE Planner `icaodata-with-zones.json` file to a Can I Fly There file
+Transform an FSE Planner `icaodata.json` file to a Can I Fly There file
 
 * `-i` FSE Planner icaodata.json file
 * `-o` Output file
-
-
-### `node fbo.js`
-
-Compute the list of unbuilt FBOs.
-
-* `-i` FSE Planner icaodata.json file
-* `-o` Output .json file
-* `-u` FSE Server username
-* `-p` FSE Server password
 
 
 ### `node planes.js`

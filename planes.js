@@ -15,7 +15,7 @@ const { Readable } = require('stream');
 const argv = require('minimist')(process.argv.slice(2));
 
 if (!argv.o) {
-  throw new Error('Missing parameter -f');
+  throw new Error('Missing parameter -o');
 }
 if (!argv.k) {
   throw new Error('Missing parameter -i');

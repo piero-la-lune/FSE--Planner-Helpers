@@ -1,8 +1,8 @@
 /*
 
-Transform an FSE Planner `icaodata-with-zones.json` file to a Can I Fly There file
+Transform an FSE Planner `icaodata.json` file to a Can I Fly There file
 
--i    FSE Planner icaodata-with-zones.json file
+-i    FSE Planner icaodata.json file
 -o    Output file
 
 */

@@ -3,7 +3,7 @@
 Compute FSE landing zones from a FSE Planner `icaodata.json` file
 
 -i    FSE Planner icaodata.json file
--o    Output file
+-o    Output zones.json file
 
 */
 
@@ -41,15 +41,15 @@ const fixLon = (lon, plon) => {
   return lon;
 }
 
+const zones = {};
 for (const [icao, a] of Object.entries(icaodata)) {
   for (const obj of polygons.features) {
     if (icao === obj.properties.site.properties.name) {
-      a.icao = icao;
-      a.zone = obj.geometry.coordinates[0].map(([lon, lat]) => [lat, fixLon(lon, a.lon)]);
+      zones[icao] = obj.geometry.coordinates[0].map(([lon, lat]) => [lat, fixLon(lon, a.lon)]);
     }
   }
 }
 
-fs.writeFileSync(argv.o, JSON.stringify(icaodata, null, '  '), (err) => { console.log(err); });
+fs.writeFileSync(argv.o, JSON.stringify(zones, null, '  '), (err) => { console.log(err); });
 
 process.exit();

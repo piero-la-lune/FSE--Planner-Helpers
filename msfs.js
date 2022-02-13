@@ -6,8 +6,9 @@ You first need to load MSFS assets with Little Navmap, then export table `airpor
 from Little Navmap MSFS SQLite database to a CSV file
 
 -f    CSV file (export from Little Navmap)
--i    FSE Planner icaodata-with-zones.json file
--o    Output icaodata-with-zones.json file
+-i    FSE Planner icaodata.json file
+-z    FSE Planner zones.json file
+-o    Output icaodata.json file
 -m    Output msfs.json file
 
 */
@@ -25,6 +26,9 @@ if (!argv.f) {
 if (!argv.i) {
   throw new Error('Missing parameter -i');
 }
+if (!argv.z) {
+  throw new Error('Missing parameter -z');
+}
 if (!argv.o) {
   throw new Error('Missing parameter -o');
 }
@@ -37,9 +41,27 @@ console.log('Loading data');
 // Load icaodata file, clean and arrange data
 const icaodata = require(argv.i);
 const icaos = Object.keys(icaodata);
+const zones = require(argv.z);
 for (const icao of icaos) {
-  icaodata[icao].zone = icaodata[icao].zone.map(([lat, lon]) => [lon, lat]);
+  zones[icao] = zones[icao].map(([lat, lon]) => [lon, lat]);
   icaodata[icao].msfs = [];
+}
+
+var surfaces = {
+  A: 1,
+  B: 1,
+  D: 3,
+  CE: 2,
+  W: 8,
+  G: 4,
+  GR: 5,
+  CR: 3,
+  S: 3,
+  OT: 1,
+  M: 1,
+  SN: 7,
+  C: 2,
+  T: 1
 }
 
 // Load MSFS extract CSV file
@@ -62,15 +84,29 @@ fs.createReadStream(argv.f)
       var found = false;
 
       // Search the matching zone
-      for (const icao of icaos) {
-        if (geolib.isPointInPolygon([airport.lonx, airport.laty], icaodata[icao].zone)) {
-          icaodata[icao].msfs.push({
-            icao: airport.ident,
-            lat: airport.laty,
-            lon: airport.lonx
-          });
-          found = icao;
-          break;
+      if (icaodata[airport.ident] && geolib.isPointInPolygon([airport.lonx, airport.laty], zones[airport.ident])) {
+        icaodata[airport.ident].msfs.push({
+          icao: airport.ident,
+          lat: airport.laty,
+          lon: airport.lonx,
+          runway: parseInt(airport.longest_runway_length),
+          surface: surfaces[airport.longest_runway_surface]
+        });
+        found = airport.ident;
+      }
+      else {
+        for (const icao of icaos) {
+          if (geolib.isPointInPolygon([airport.lonx, airport.laty], zones[icao])) {
+            icaodata[icao].msfs.push({
+              icao: airport.ident,
+              lat: airport.laty,
+              lon: airport.lonx,
+              runway: parseInt(airport.longest_runway_length),
+              surface: surfaces[airport.longest_runway_surface]
+            });
+            found = icao;
+            break;
+          }
         }
       }
       // Should never happen
@@ -90,11 +126,14 @@ fs.createReadStream(argv.f)
 
     console.log('Cleaning up');
     for (const icao of icaos) {
-      icaodata[icao].zone = icaodata[icao].zone.map(([lon, lat]) => [lat, lon]);
       if (icaodata[icao].msfs.length > 0) {
         const sortedArr = geolib.orderByDistance(icaodata[icao], icaodata[icao].msfs);
         if (icao !== sortedArr[0].icao && geolib.getDistance(sortedArr[0], icaodata[icao]) > 2000) {
           sortedArr.unshift(null);
+        }
+        else {
+          icaodata[icao].surface = sortedArr[0].surface;
+          icaodata[icao].runway = sortedArr[0].runway;
         }
         icaodata[icao].msfs = sortedArr.map(obj => obj ? obj.icao : null);
       }
