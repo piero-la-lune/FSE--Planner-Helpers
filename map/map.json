@@ -11,7 +11,7 @@
     "https://map-d.fse-planner.piero-la-lune.fr/tiles/{z}/{x}/{y}.pbf"
   ],
   "minzoom": 0,
-  "maxzoom": 9,
+  "maxzoom": 11,
   "bounds": [
     -180,
     -85.0511,

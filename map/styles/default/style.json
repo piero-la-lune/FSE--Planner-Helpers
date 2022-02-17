@@ -3,7 +3,20 @@
   "id": "default",
   "name": "Default",
   "sources": {
-    "openmaptiles": {"type": "vector", "url": "https://map-a.fse-planner.piero-la-lune.fr/map.json"}
+    "openmaptiles": {
+      "type": "vector",
+      "url": "https://map-a.fse-planner.piero-la-lune.fr/map.json"
+    },
+    "terrarium": {
+      "type": "raster-dem",
+      "tiles": [
+        "https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"
+      ],
+      "minzoom": 0,
+      "maxzoom": 15,
+      "tileSize": 256,
+      "encoding": "terrarium"
+    }
   },
   "sprite": "https://map-a.fse-planner.piero-la-lune.fr/styles/default/sprite",
   "glyphs": "https://map-a.fse-planner.piero-la-lune.fr/fonts/{fontstack}/{range}.pbf",
@@ -46,6 +59,17 @@
       "paint": {"fill-color": "rgba(176, 213, 154, 1)", "fill-opacity": 0.3}
     },
     {
+      "id": "terrain-rgb-terrarium",
+      "type": "hillshade",
+      "source": "terrarium",
+      "minzoom": 0,
+      "paint": {
+        "hillshade-shadow-color": "hsl(39, 21%, 33%)",
+        "hillshade-illumination-direction": 315,
+        "hillshade-exaggeration": 0.3
+      }
+    },
+    {
       "id": "landcover_water",
       "type": "fill",
       "source": "openmaptiles",
@@ -57,18 +81,6 @@
       ],
       "layout": {"visibility": "visible"},
       "paint": {"fill-color": "rgb(158,189,255)"}
-    },
-    {
-      "id": "landcover_ice",
-      "type": "fill",
-      "source": "openmaptiles",
-      "source-layer": "landcover",
-      "filter": ["all", ["==", "class", "ice"]],
-      "layout": {"visibility": "visible"},
-      "paint": {
-        "fill-color": "rgba(224, 236, 236, 1)",
-        "fill-opacity": {"base": 1, "stops": [[0, 1], [8, 0.5]]}
-      }
     },
     {
       "id": "waterway_tunnel",
@@ -727,7 +739,7 @@
       "layout": {
         "icon-size": 1,
         "text-anchor": "center",
-        "text-field": "{name:latin} {name:nonlatin}",
+        "text-field": "{name:latin}\n{name:nonlatin}",
         "text-font": ["Roboto Regular"],
         "text-max-width": 8,
         "text-offset": [0, 0],
@@ -858,7 +870,7 @@
       ],
       "layout": {
         "text-anchor": "center",
-        "text-field": "{name:latin} {name:nonlatin}",
+        "text-field": "{name:latin}\n{name:nonlatin}",
         "text-font": ["Roboto Regular"],
         "text-max-width": 6,
         "text-size": {"stops": [[6, 10], [12, 14]]},
@@ -879,7 +891,7 @@
       "maxzoom": 24,
       "filter": ["all", ["==", "$type", "Point"], ["==", "class", "city"]],
       "layout": {
-        "text-field": "{name:latin} {name:nonlatin}",
+        "text-field": "{name:latin}\n{name:nonlatin}",
         "text-font": ["Roboto Regular"],
         "text-max-width": 10,
         "text-size": {"stops": [[3, 8], [8, 16]]},
