@@ -32,6 +32,18 @@ Mandatory parameters:
 * `-m` Output msfs.json file
 
 
+### `node xplane.js`
+
+Compute X-Plane airports within each FSE airport landing zone
+
+Mandatory parameters:
+
+* `-i` FSE Planner icaodata.json file
+* `-z` FSE Planner zones.json file
+* `-o` Output icaodata.json file
+* `-m` Output xplane.json file
+
+
 ### `node hasils.js`
 
 Edit icaodata to add ILS information
