@@ -5,13 +5,13 @@ const icaodata = require('./icaodata.json');
 AWS.config.update({region: 'eu-west-3'});
 
 exports.handler = async (event) => {
-    
+
     axios.defaults.withCredentials = true;
     const instance = axios.create({
       withCredentials: true,
       baseURL: 'https://server.fseconomy.net/'
     })
-    
+
     try {
 
         let res = await instance.post('index.jsp');
@@ -37,7 +37,12 @@ exports.handler = async (event) => {
         const matchInactive = [...res.data.matchAll(/\\">([A-Z0-9]+)<\/a>/g)];
         const inactive = matchInactive.map(elm => elm[1]);
 
-        const unbuilt = Object.keys(icaodata).filter(elm => !active.includes(elm) && !inactive.includes(elm));
+        res = await instance.get('rest/api2/map/fbos/lottery', params);
+        if (!res.data.data || !res.data.meta || res.data.meta.code !== 200) { throw new Error(res.data.meta.info); }
+
+        const lottery = res.data.data.map(({ icao }) => icao);
+
+        const unbuilt = Object.keys(icaodata).filter(elm => !active.includes(elm) && !inactive.includes(elm) && !lottery.includes(elm));
 
         const s3 = new AWS.S3({apiVersion: '2006-03-01'});
         var uploadParams = {
@@ -47,7 +52,7 @@ exports.handler = async (event) => {
             CacheControl: 'no-cache'
         };
         const stored = await s3.upload(uploadParams).promise();
-    
+
         return {
             statusCode: 200,
             body: stored
