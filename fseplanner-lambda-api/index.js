@@ -42,7 +42,7 @@ exports.handler = async function (event, context, callback) {
         catch (error) {
             return Response(400, {message: error});
         }
-        if (!body.version || !/^[0-9]+\.[0-9]+\.[0-9]+$/.test(body.version) || !body.info || typeof body.info !== "object") {
+        if (!body.version || !/^[0-9]+\.[0-9]+\.[0-9]+(-alpha\.[0-9]+)?$/.test(body.version) || !body.info || typeof body.info !== "object") {
             return Response(400, {message: 'Bad request'});
         }
         body.info.shareID = id;
@@ -66,7 +66,7 @@ exports.handler = async function (event, context, callback) {
         catch (error) {
             return Response(400, {message: error});
         }
-        if (!body.editId || !body.version || !/^[0-9]+\.[0-9]+\.[0-9]+$/.test(body.version) || !body.info || typeof body.info !== "object") {
+        if (!body.editId || !body.version || !/^[0-9]+\.[0-9]+\.[0-9]+(-alpha\.[0-9]+)?$/.test(body.version) || !body.info || typeof body.info !== "object") {
             return Response(400, {message: 'Bad request'});
         }
         let data = await dbb.get({
