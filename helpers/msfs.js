@@ -82,6 +82,10 @@ fs.createReadStream(argv.f)
     // Counter
     for (const airport of msfs) {
       var found = false;
+      if (airport.is_closed === '1') {
+        bar.increment();
+        continue;
+      }
 
       // Search the matching zone
       if (icaodata[airport.ident] && geolib.isPointInPolygon([airport.lonx, airport.laty], zones[airport.ident])) {
