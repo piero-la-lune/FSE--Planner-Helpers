@@ -59,86 +59,121 @@ axios
         const notFound = [];
         const obj = {};
 
-        // Counter
-        for (const airport of xplane) {
-          bar.increment();
-          var found = false;
-          if (airport.RecommendedSceneryId === null || !packIds.includes(airport.RecommendedSceneryId)) { continue; }
-          if (airport.DeprecatedInFavorOf !== null) { continue; }
+        var i = 0;
 
-          let code = airport.AirportCode;
-          if (airport.metadata) {
-            if (airport.metadata.icao_code) {
-              code = airport.metadata.icao_code;
-            }
-            else if (airport.metadata.iata_code) {
-              code = airport.metadata.iata_code;
-            }
-            else if (airport.metadata.faa_code) {
-              code = airport.metadata.faa_code;
-            }
-            else if (airport.metadata.local_code) {
-              code = airport.metadata.local_code;
-            }
-          }
+        const doAirport = () => {
+          if (i >= xplane.length) {
+            bar.stop();
 
-          // Search the matching zone
-          if (icaodata[code] && geolib.isPointInPolygon([airport.Longitude, airport.Latitude], zones[code])) {
-            icaodata[code].xplane.push({
-              icao: code,
-              lat: airport.Latitude,
-              lon: airport.Longitude
-            });
-            found = code;
-          }
-          else {
+            console.log('Not found: ', notFound.join(' '));
+
+            console.log('Cleaning up');
             for (const icao of icaos) {
-              if (geolib.isPointInPolygon([airport.Longitude, airport.Latitude], zones[icao])) {
-                icaodata[icao].xplane.push({
-                  icao: code,
-                  lat: airport.Latitude,
-                  lon: airport.Longitude
-                });
-                found = icao;
-                break;
+              if (icaodata[icao].xplane.length > 0) {
+                const sortedArr = geolib.orderByDistance(icaodata[icao], icaodata[icao].xplane);
+                if (icao !== sortedArr[0].icao && geolib.getDistance(sortedArr[0], icaodata[icao]) > 2000) {
+                  sortedArr.unshift(null);
+                }
+                icaodata[icao].xplane = sortedArr.map(obj => obj ? obj.icao : null);
+              }
+              else {
+                icaodata[icao].xplane.unshift(null);
               }
             }
-          }
-          // Should never happen
-          if (!found) {
-            notFound.push(code);
-          }
-          obj[code] = {
-            lon: parseFloat(airport.Longitude),
-            lat: parseFloat(airport.Latitude)
-          }
-        }
 
-        bar.stop();
+            console.log('Saving file');
 
-        console.log('Not found: ', notFound.join(' '));
+            fs.writeFileSync(argv.o, JSON.stringify(icaodata, null, '  '), (err) => { console.log(err); });
+            fs.writeFileSync(argv.x, JSON.stringify(obj, null, '  '), (err) => { console.log(err); });
 
-        console.log('Cleaning up');
-        for (const icao of icaos) {
-          if (icaodata[icao].xplane.length > 0) {
-            const sortedArr = geolib.orderByDistance(icaodata[icao], icaodata[icao].xplane);
-            if (icao !== sortedArr[0].icao && geolib.getDistance(sortedArr[0], icaodata[icao]) > 2000) {
-              sortedArr.unshift(null);
-            }
-            icaodata[icao].xplane = sortedArr.map(obj => obj ? obj.icao : null);
+            console.log('Done');
+
+            process.exit();
           }
           else {
-            icaodata[icao].xplane.unshift(null);
-          }
+            const airport = xplane[i];
+            axios
+              .get('https://gateway.x-plane.com/apiv1/airport/'+airport.AirportCode)
+              .then(res => {
+
+                bar.increment();
+                var found = false;
+                const data = res.data.airport;
+
+                var f = false;
+                for (const scenery of data.scenery) {
+                  if (packIds.includes(scenery.sceneryId)) {
+                    f = true;
+                    break;
+                  }
+                }
+
+                if (!f) {
+                  i++;
+                  doAirport();
+                  return false;
+                }
+
+                let code = airport.AirportCode;
+                if (airport.metadata) {
+                  if (airport.metadata.icao_code) {
+                    code = airport.metadata.icao_code;
+                  }
+                  else if (airport.metadata.iata_code) {
+                    code = airport.metadata.iata_code;
+                  }
+                  else if (airport.metadata.faa_code) {
+                    code = airport.metadata.faa_code;
+                  }
+                  else if (airport.metadata.local_code) {
+                    code = airport.metadata.local_code;
+                  }
+                }
+
+                // Search the matching zone
+                if (icaodata[code] && geolib.isPointInPolygon([airport.Longitude, airport.Latitude], zones[code])) {
+                  icaodata[code].xplane.push({
+                    icao: code,
+                    lat: airport.Latitude,
+                    lon: airport.Longitude
+                  });
+                  found = code;
+                }
+                else {
+                  for (const icao of icaos) {
+                    if (geolib.isPointInPolygon([airport.Longitude, airport.Latitude], zones[icao])) {
+                      icaodata[icao].xplane.push({
+                        icao: code,
+                        lat: airport.Latitude,
+                        lon: airport.Longitude
+                      });
+                      found = icao;
+                      break;
+                    }
+                  }
+                }
+                // Should never happen
+                if (!found) {
+                  notFound.push(code);
+                }
+                obj[code] = {
+                  lon: parseFloat(airport.Longitude),
+                  lat: parseFloat(airport.Latitude)
+                }
+
+                // Next airport;
+                i++;
+                doAirport();
+              })
+              .catch(error => {
+                bar.increment();
+                i++;
+                doAirport();
+              });
+            }
         }
 
-        console.log('Saving file');
+        doAirport();
 
-        fs.writeFileSync(argv.o, JSON.stringify(icaodata, null, '  '), (err) => { console.log(err); });
-        fs.writeFileSync(argv.x, JSON.stringify(obj, null, '  '), (err) => { console.log(err); });
-
-        console.log('Done');
-
-        process.exit();
       });
   });
