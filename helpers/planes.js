@@ -34,11 +34,22 @@ axios
       .on('end', () => {
         planes.pop();
         const obj = {};
-        for (plane of planes) {
-          const model = plane.MakeModel;
-          delete plane.MakeModel;
-          delete plane[''];
-          obj[model] = plane;
+        for (p of planes) {
+          const model = p.MakeModel;
+          const fuelCapacity = (p.Ext1 + p.LTip + p.LAux + p.LMain + p.Center1
+                              + p.Center2 + p.Center3 + p.RMain + p.RAux
+                              + p.RTip + p.RExt2);
+          obj[model] = {
+            // Total plane seats - 1 seat for pilot - 1 seat if additionnal crew
+            maxPax: p.Seats - (p.Crew > 0 ? 2 : 1),
+            maxCargo: p.MaxCargo,
+            fuelCapacity: fuelCapacity,
+            speed: p.CruiseSpeed,
+            GPH: p.GPH,
+            fuelType: p.FuelType,
+            // Max total weight - Empty plane weight - Weight of pilot and crew
+            maxKg: Math.floor(p.MTOW - p.EmptyWeight - 77*(1+p.Crew))
+          };
         }
         fs.writeFileSync(argv.o, JSON.stringify(obj, null, '  '), (err) => { console.log(err); });
       });
