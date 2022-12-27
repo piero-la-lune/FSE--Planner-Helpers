@@ -68,6 +68,10 @@ const schema = {
         desc: {
           type: "string",
           maxLength: 3000
+        },
+        location: {
+          type: "string",
+          maxLength: 500
         }
       },
       required: ["name", "color", "size"],
