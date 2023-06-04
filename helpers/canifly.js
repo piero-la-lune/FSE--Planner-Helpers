@@ -46,7 +46,9 @@ for (const icao of icaos) {
   }
 }
 
-txt += '}';
+txt = txt.slice(0, -1); // Remove last coma
+txt += `
+}`;
 
 
 fs.writeFileSync(argv.o, txt, (err) => { console.log(err); });
