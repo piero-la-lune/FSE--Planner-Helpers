@@ -17,6 +17,7 @@ const geolib = require('geolib');
 const fs = require('fs');
 const csv = require('csv-parser');
 const cliProgress = require('cli-progress');
+const { kdTree } = require('kd-tree-javascript');
 
 const argv = require('minimist')(process.argv.slice(2));
 
@@ -42,10 +43,13 @@ console.log('Loading data');
 const icaodata = require(argv.i);
 const icaos = Object.keys(icaodata);
 const zones = require(argv.z);
+const points = [];
 for (const icao of icaos) {
   zones[icao] = zones[icao].map(([lat, lon]) => [lon, lat]);
   icaodata[icao].msfs = [];
+  points.push({lon: icaodata[icao].lon, lat: icaodata[icao].lat, icao: icao});
 }
+const tree = new kdTree(points, (a, b) => geolib.getDistance([a.lon, a.lat], [b.lon, b.lat]), ["lon", "lat"]);
 
 var surfaces = {
   A: 1,
@@ -76,12 +80,11 @@ fs.createReadStream(argv.f)
     console.log('Analyzing all MSFS airports');
     bar.start(msfs.length, 0);
 
-    const notFound = [];
+    const ignored = [];
     const obj = {};
 
     // Counter
     for (const airport of msfs) {
-      var found = false;
       if (airport.is_closed === '1') {
         bar.increment();
         continue;
@@ -96,26 +99,39 @@ fs.createReadStream(argv.f)
           runway: parseInt(airport.longest_runway_length),
           surface: surfaces[airport.longest_runway_surface]
         });
-        found = airport.ident;
       }
       else {
-        for (const icao of icaos) {
-          if (geolib.isPointInPolygon([airport.lonx, airport.laty], zones[icao])) {
-            icaodata[icao].msfs.push({
-              icao: airport.ident,
-              lat: airport.laty,
-              lon: airport.lonx,
-              runway: parseInt(airport.longest_runway_length),
-              surface: surfaces[airport.longest_runway_surface]
-            });
-            found = icao;
-            break;
-          }
+        const point = {lon: airport.lonx, lat: airport.laty};
+        const nearest = tree.nearest(point, 2);
+        const dir1 = geolib.getGreatCircleBearing(nearest[1][0], point);
+        const dir2 = geolib.getGreatCircleBearing(nearest[1][0], nearest[0][0]);
+        const angle1 = (((dir1 - dir2) % 360) + 360) % 360;
+        const angle2 = (((dir2 - dir1) % 360) + 360) % 360;
+        const angle = Math.min(angle1, angle2);
+        const dist = geolib.getDistance(nearest[0][0], nearest[1][0]);
+        const dProjected = dist - 2*(
+          Math.cos(
+            angle * Math.PI / 180
+          ) * nearest[1][1]
+        );
+        // if (airport.ident === "LECM") {
+        //   console.log(nearest);
+        //   console.log(dist);
+        //   console.log(dProjected);
+        //   process.exit();
+        // }
+        if (dist > 0 && angle < 90 && dProjected < 600 && (dProjected/dist < 0.2)) {
+           ignored.push(airport.ident);
         }
-      }
-      // Should never happen
-      if (!found) {
-        notFound.push(airport.ident);
+        else {
+          icaodata[nearest[1][0].icao].msfs.push({
+            icao: airport.ident,
+            lat: airport.laty,
+            lon: airport.lonx,
+            runway: parseInt(airport.longest_runway_length),
+            surface: surfaces[airport.longest_runway_surface]
+          });
+        }
       }
       obj[airport.ident] = {
         lon: parseFloat(airport.lonx),
@@ -126,7 +142,7 @@ fs.createReadStream(argv.f)
 
     bar.stop();
 
-    console.log('Not found: ', notFound.join(' '));
+    console.log('Ignored (equal distance to 2 FSE airports): ', ignored.sort().join(' '));
 
     console.log('Cleaning up');
     for (const icao of icaos) {
