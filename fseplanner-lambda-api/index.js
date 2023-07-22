@@ -37,6 +37,7 @@ const schema = {
           maxItems: 2
         },
         onlySim: { type: "boolean" },
+        onlySimAlternative: { type: "boolean" },
         onlyBM: { type: "boolean" },
         onlyILS: { type: "boolean" },
         excludeMilitary: { type: "boolean" },
@@ -64,6 +65,10 @@ const schema = {
         size: {
           type: "integer",
           enum: [3, 8, 13, 20, 25]
+        },
+        weight: {
+          type: "integer",
+          enum: [1, 2, 3, 5, 10]
         },
         desc: {
           type: "string",
