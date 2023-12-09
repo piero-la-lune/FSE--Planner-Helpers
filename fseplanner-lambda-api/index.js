@@ -46,6 +46,16 @@ const schema = {
           items: { type: "integer" },
           minItems: 2,
           maxItems: 2
+        },
+        area: {
+          type: "array",
+          items: {
+            type: "array",
+            items: { type: "number" },
+            minItems: 2,
+            maxItems: 2
+          },
+          maxItems: 200
         }
       },
       required: ["size", "surface", "runway", "price"],
