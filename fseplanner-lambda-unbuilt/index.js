@@ -27,35 +27,31 @@ exports.handler = async (event) => {
 
         res = await instance.post('userctl', 'offset=1&user='+process.env.username+'&password='+process.env.password+'&event=Agree+%26+Log+in&basil=', params);
 
-        res = await instance.post('gmapfbo.jsp', 'fboCheck=checkbox&icao=&name=&country=&state=&region=&submit=Get+Map&return=gmapfbo.jsp', params);
+        res = await instance.get('rest/api2/map/fbos/open', params);
 
-        const matchBuilt = [...res.data.matchAll(/\\">([A-Z0-9]+)<\/a>/g)];
-        const active = matchBuilt.map(elm => elm[1]);
+        if (res.data && res.data.data && res.data.data.airports && Array.isArray(res.data.data.airports)) {
 
-        res = await instance.post('gmapfbo.jsp', 'inactiveCheck=checkbox&icao=&name=&country=&state=&region=&submit=Get+Map&return=gmapfbo.jsp', params);
+            const airports = res.data.data.airports;
+            const unbuilt = airports.map(e => e.icao);
 
-        const matchInactive = [...res.data.matchAll(/\\">([A-Z0-9]+)<\/a>/g)];
-        const inactive = matchInactive.map(elm => elm[1]);
-
-        res = await instance.get('rest/api2/map/fbos/lottery', params);
-        if (!res.data.data || !res.data.meta || res.data.meta.code !== 200) { throw new Error(res.data.meta.info); }
-
-        const lottery = res.data.data.map(({ icao }) => icao);
-
-        const unbuilt = Object.keys(icaodata).filter(elm => !active.includes(elm) && !inactive.includes(elm) && !lottery.includes(elm));
-
-        const s3 = new AWS.S3({apiVersion: '2006-03-01'});
-        var uploadParams = {
-            Bucket: 'fse-planner-data',
-            Key: 'unbuilt.json',
-            Body: JSON.stringify(unbuilt, null, '  '),
-            CacheControl: 'no-cache'
-        };
-        const stored = await s3.upload(uploadParams).promise();
-
+            const s3 = new AWS.S3({apiVersion: '2006-03-01'});
+            var uploadParams = {
+                Bucket: 'fse-planner-data',
+                Key: 'unbuilt.json',
+                Body: JSON.stringify(unbuilt, null, '  '),
+                CacheControl: 'no-cache'
+            };
+            const stored = await s3.upload(uploadParams).promise();
+    
+            return {
+                statusCode: 200,
+                body: stored
+            }
+        
+        }
         return {
-            statusCode: 200,
-            body: stored
+            statusCode: 400,
+            body: 'Unable to load unbuilt lots'
         }
     }
     catch (e) {
